@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply font-sans antialiased;
+  transition-property: background-color, color;
+  transition-duration: 300ms;
+  transition-timing-function: ease-in-out;
+}
+
+.gradient-text {
+  @apply bg-clip-text text-transparent;
+}
+
+/* Custom scrollbar for better dark mode aesthetics (optional) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 dark:bg-dark-bg;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-400 dark:bg-gray-600 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-500 dark:bg-gray-500;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #9ca3af #f3f4f6; /* thumb track for light */
+}
+
+.dark * {
+  scrollbar-color: #4b5563 #111827; /* thumb track for dark */
+}
+
+
+/* Additional utility for gauge needle transition */
+.gauge-needle {
+  transition: transform 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Bounce effect */
+}
