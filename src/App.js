@@ -13,6 +13,15 @@ const getTodayDateString = () => {
   return `${year}-${month}-${day}`;
 };
 
+// --- Helper Function to get previous day's date in YYYY-MM-DD format ---
+const getPreviousDayDateString = () => {
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1); // Subtract one day
+  const year = yesterday.getFullYear();
+  const month = String(yesterday.getMonth() + 1).padStart(2, '0');
+  const day = String(yesterday.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 const App = () => {
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -117,9 +126,10 @@ const App = () => {
       }
 
       const todayString = getTodayDateString();
-      console.log("Filtering for date:", todayString); // DEBUG
+      const previousDayString = getPreviousDayDateString();
+      console.log("Filtering for today:", todayString, "or previous day:", previousDayString); // DEBUG
 
-      const formattedAndFilteredData = data.items
+      const rawFormattedData = data.items
         .map((item) => {
           let itemDateString = '';
           if (item.pubDate) {
@@ -142,22 +152,25 @@ const App = () => {
             sentiment_score: 0,
             sentiment_label: 'Neutral',
           };
-        })
-        .filter(item => {
-            // console.log(`Comparing item date "${item.itemDateString}" with today "${todayString}" for title: ${item.title}`); // DEBUG
-            return item.itemDateString === todayString;
         });
       
-      console.log("Number of articles after date filtering:", formattedAndFilteredData.length); // DEBUG
+      let filteredData = rawFormattedData.filter(item => item.itemDateString === todayString);
+      console.log("Number of articles after today's date filtering:", filteredData.length); // DEBUG
 
-      if (formattedAndFilteredData.length === 0 && data.items.length > 0) {
-        setErrorMessage(`No specific financial news found for today with the current keywords. ${data.items.length} articles were found from the feed, but none matched today's date or your keywords.`);
-      } else if (formattedAndFilteredData.length === 0 && data.items.length === 0) {
+      if (filteredData.length === 0 && data.items.length > 0) {
+        console.log("No news for today, trying previous day...");
+        filteredData = rawFormattedData.filter(item => item.itemDateString === previousDayString);
+        if (filteredData.length > 0) {
+          setErrorMessage(`No news found for today. Showing news from yesterday (${previousDayString}).`);
+        } else {
+            setErrorMessage(`No specific financial news found for today or yesterday with the current keywords. ${data.items.length} articles were found from the feed, but none matched these dates or your keywords.`);
+        }
+      } else if (filteredData.length === 0 && data.items.length === 0) {
          setErrorMessage("No financial news found at all with the current keywords. The RSS feed might be empty or the query too restrictive.");
       }
 
 
-      const dataWithPseudoSentiment = formattedAndFilteredData.map(item => {
+      const dataWithPseudoSentiment = filteredData.map(item => {
         let label = 'Neutral'; let score = 0;
         const titleLower = item.title.toLowerCase();
         const positiveKeywords = ['surge', 'rally', 'profit', 'gain', 'up', 'high', 'optimistic', 'boom', 'record', 'strong', 'rises', 'boost', 'jumps'];
